@@ -23,9 +23,7 @@ class SGANGenerator(nn.Module):
             ))
 
             if i < num_layers - 1:
-                # inplace mozda ne bude radio
                 self.layers.append(nn.ReLU(inplace = True))
-                # fale gamma i beta
                 self.layers.append(nn.BatchNorm2d(NUM_FILTERS[i], eps = 1e-04, momentum = 0.1))
             else:
                 # za poslednji sloj rade tanh bez batch norma

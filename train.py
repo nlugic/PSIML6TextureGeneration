@@ -4,14 +4,14 @@ import numpy as np
 
 from discriminator import SGANDiscrimantor
 from generator import SGANGenerator
-from helpers import get_train_dataset, init_sgan_weights
+from helpers import get_train_dataset, init_sgan_weights, save_tensor_as_image
 
 layers = 5
 nz = 50
 l = 9
 batch_size = 32
 
-device = torch.device("cpu")
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 gen = SGANGenerator(nz, layers).to(device)
 gen.layers.apply(init_sgan_weights)
@@ -36,16 +36,27 @@ while True:
     loss_list_d = []
     loss_list_g = []
 
-    n_iter = 1 # oni imaju 100 iteracija, ali u jednoj treniraju ili gen ili dis, a mi oba
+    n_iter = 50 # oni imaju 100 iteracija, ali u jednoj treniraju ili gen ili dis, a mi oba
     for i, img_real in enumerate(tqdm(dataset_iter, total=n_iter)):
         if i >= n_iter:
             break
 
-        z = torch.rand(batch_size, nz, l, l) * 2 - 1
+        z = torch.rand(batch_size, nz, l, l).to(device) * 2 - 1
+
+        # Train discriminator
+        dis.zero_grad()
+        img_fake = gen(z)
+        pred_fake = dis(img_fake.detach())
+        pred_real = dis(img_real)
+
+        loss_d = loss_funct_d(pred_real, pred_fake)
+        loss_list_d.append(loss_d.item())
+        loss_d.backward()
+        optim_d.step()
         
         # Train generator
         gen.zero_grad()
-        img_fake = gen(z)
+        #img_fake = gen(z)
         pred_fake = dis(img_fake)
 
         loss_g = loss_funct_g(pred_fake)
@@ -53,15 +64,5 @@ while True:
         loss_g.backward()
         optim_g.step()
 
-        # Train discriminator
-        dis.zero_grad()
-        img_fake = gen(z)
-        pred_fake = dis(img_fake)
-        pred_real = dis(img_real)
-
-        loss_d = loss_funct_d(pred_real, pred_fake)
-        loss_list_d.append(loss_d.item())
-        loss_d.backward()
-        optim_d.step()
-
     print("Loss G:", np.mean(loss_list_g), ", Loss D:", np.mean(loss_list_d))
+    save_tensor_as_image(gen(z).detach()[0], "output.jpg")
