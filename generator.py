@@ -13,7 +13,6 @@ class SGANGenerator(nn.Module):
         PADDING = KERNEL_SIZE // 2
 
         for i in range(num_layers):
-            # pitanje paddinga
             self.layers.append(nn.ConvTranspose2d(
                 in_channels if i == 0 else NUM_FILTERS[i - 1],
                 NUM_FILTERS[i],
