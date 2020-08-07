@@ -12,8 +12,9 @@ def init_sgan_weights(node):
         nn.init.normal_(node.weight.data, std = 0.02)
         nn.init.normal_(node.bias.data, std = 0.02) # ovo je u kodu najverovatnije 0.0
     elif isinstance(node, nn.BatchNorm2d):
-        nn.init.normal_(node.weight.data, std = 0.02) # ovo je u kodu najverovatnije sa mean = 1.0
-        nn.init.normal_(node.weight.bias, std = 0.02) # ovo je u kodu najverovatnije 0.0
+        #nn.init.normal_(node.weight.data, std = 0.02) # ovo je u kodu najverovatnije sa mean = 1.0
+        nn.init.normal_(node.weight.data, mean=1.0, std = 0.02)
+        #nn.init.normal_(node.bias.data, std = 0.02) # ovo je u kodu najverovatnije 0.0
 
 def image_to_tensor(img):
     tensor = torch.Tensor(np.array(img).transpose((2, 0, 1)))
@@ -25,22 +26,22 @@ def save_tensor_as_image(tensor, filename):
 
     Image.fromarray(img).save(filename)
 
-def get_train_dataset(path, size = 128, batch_size = 64, mirror = True):
+def get_train_dataset(path, device, size = 128, batch_size = 64, mirror = True):
     images_to_sample = []
 
     for file in os.listdir(path): # promeniti tako da pita dal je fajl
         name = path + file
         try:
             img = Image.open(name)
-            images_to_sample += [image_to_tensor(img)]
+            images_to_sample += [image_to_tensor(img).to(device)]
             if mirror:
                 img = img.transpose(Image.FLIP_LEFT_RIGHT)
-                images_to_sample += [image_to_tensor(img)]
+                images_to_sample += [image_to_tensor(img).to(device)]
         except:
             print("Image ", name, " failed to load!")
 
     while True:
-        train_dataset = Torch.zeros(batch_size, 3, size, size)
+        train_dataset = torch.zeros(batch_size, 3, size, size)
         for i in range(batch_size):
             image_to_sample = images_to_sample[np.random.randint(len(images_to_sample))]
             if size < image_to_sample.shape[1] and size < image_to_sample.shape[2]:
@@ -52,4 +53,4 @@ def get_train_dataset(path, size = 128, batch_size = 64, mirror = True):
 
             train_dataset[i, :, :, :] = img
 
-        return train_dataset
+        yield train_dataset

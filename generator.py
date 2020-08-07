@@ -5,7 +5,7 @@ class SGANGenerator(nn.Module):
     def __init__(self, in_channels, num_layers):
         super(SGANGenerator, self).__init__()
         self.name = 'SGAN' + str(num_layers) + '_GEN'
-        self.layers = []
+        self.layers = nn.ModuleList()
         
         NUM_FILTERS = [2 ** (num_layers + 4 - i) for i in range(num_layers - 1)] + [3] # 3 -> RGB output
         KERNEL_SIZE = 5
