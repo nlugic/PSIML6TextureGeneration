@@ -83,8 +83,8 @@ while True:
     best=1e6
     crop1=0
     crop2=0
-    for i in range(ovp*tot_subsample/2,ovp*tot_subsample):
-        for j in range(ovp*tot_subsample/2,ovp*tot_subsample):
+    for i in range(32,64):
+        for j in range(32,64):
             loss = offsetLoss(i,j)
             if loss < best:
                 best=loss
