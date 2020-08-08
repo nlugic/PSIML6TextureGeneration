@@ -19,12 +19,12 @@ class SGANGenerator(nn.Module):
                 kernel_size = KERNEL_SIZE,
                 stride = STRIDE,
                 padding = PADDING,
-                output_padding = 1
+                #output_padding=1
             ))
 
             if i < num_layers - 1:
-                self.layers.append(nn.ReLU(inplace = True))
                 self.layers.append(nn.BatchNorm2d(NUM_FILTERS[i], eps = 1e-04, momentum = 0.1))
+                self.layers.append(nn.ReLU(inplace = True))
             else:
                 # za poslednji sloj rade tanh bez batch norma
                 self.layers.append(nn.Tanh())
