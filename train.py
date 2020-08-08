@@ -19,10 +19,10 @@ dis = SGANDiscrimantor(layers).to(device)
 dis.layers.apply(init_sgan_weights)
 
 dataset_folder = "train_textures/"
-dataset_iter = get_train_dataset(dataset_folder, device, size=l * 2**layers)
+dataset_iter = get_train_dataset(dataset_folder, device, size=l * 2**layers, batch_size=batch_size)
 
-loss_funct_g = lambda pred: -torch.mean(torch.log(pred))
-loss_funct_d = lambda pred_real, pred_fake: -torch.mean(torch.log(1 - pred_fake)) - torch.mean(torch.log(pred_real))
+loss_funct_g = lambda pred: torch.mean(F.binary_cross_entropy_with_logits(pred, pred.new_ones(pred.size())))
+loss_funct_d = lambda pred_real, pred_fake: torch.mean(F.binary_cross_entropy_with_logits(pred_fake, pred_fake.new_zeros(pred_fake.size()))) + torch.mean(F.binary_cross_entropy_with_logits(pred_real, pred_real.new_ones(pred_real.size())))
 
 optim_g = torch.optim.Adam(gen.parameters(), lr=0.0002, betas=(0.5, 0.999), weight_decay=1e-5)
 optim_d = torch.optim.Adam(dis.parameters(), lr=0.0002, betas=(0.5, 0.999), weight_decay=1e-5)

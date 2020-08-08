@@ -25,8 +25,6 @@ class SGANDiscrimantor(nn.Module):
                 self.layers.append(nn.LeakyReLU(0.2, inplace = True))
                 if i > 0:
                     self.layers.append(nn.BatchNorm2d(NUM_FILTERS[i], eps = 1e-04, momentum = 0.1))
-            else:
-                self.layers.append(nn.Sigmoid())
 
     def forward(self, input_tensor):
         output = input_tensor
