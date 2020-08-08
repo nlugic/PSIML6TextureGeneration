@@ -1,5 +1,7 @@
 from tqdm import tqdm
 import torch
+from torch.utils.tensorboard import SummaryWriter
+import torch.nn.functional as F
 import numpy as np
 
 from discriminator import SGANDiscrimantor
@@ -27,6 +29,9 @@ loss_funct_d = lambda pred_real, pred_fake: torch.mean(F.binary_cross_entropy_wi
 optim_g = torch.optim.Adam(gen.parameters(), lr=0.0002, betas=(0.5, 0.999), weight_decay=1e-5)
 optim_d = torch.optim.Adam(dis.parameters(), lr=0.0002, betas=(0.5, 0.999), weight_decay=1e-5)
 
+writer = SummaryWriter()
+z9 = torch.rand(batch_size, nz, 9, 9).to(device) * 2 - 1
+z20 = torch.rand(batch_size, nz, 20, 20).to(device) * 2 - 1
 
 epoch = 0
 while True:
@@ -64,5 +69,7 @@ while True:
         loss_g.backward()
         optim_g.step()
 
-    print("Loss G:", np.mean(loss_list_g), ", Loss D:", np.mean(loss_list_d))
-    save_tensor_as_image(gen(z).detach()[0], "output.jpg")
+    writer.add_scalar("Loss/Generator", np.mean(loss_list_g), epoch)
+    writer.add_scalar("Loss/Discriminator", np.mean(loss_list_d), epoch)
+    writer.add_images("Generated images/l9", gen(z9)[:4] / 2 + 0.5, epoch)
+    writer.add_images("Generated images/l20", gen(z20)[:4] / 2 + 0.5, epoch)
