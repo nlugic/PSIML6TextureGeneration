@@ -32,6 +32,9 @@ optim_d = torch.optim.Adam(dis.parameters(), lr=0.0002, betas=(0.5, 0.999), weig
 writer = SummaryWriter()
 z9 = torch.rand(batch_size, nz, 9, 9).to(device) * 2 - 1
 z20 = torch.rand(batch_size, nz, 20, 20).to(device) * 2 - 1
+z_tile = torch.rand(batch_size, nz, 24, 24).to(device) * 2 - 1
+z_tile[:,:,:4] = z_tile[:,:,-4:]
+z_tile[:,:,:,:4] = z_tile[:,:,:,-4:]
 
 epoch = 0
 while True:
@@ -73,3 +76,21 @@ while True:
     writer.add_scalar("Loss/Discriminator", np.mean(loss_list_d), epoch)
     writer.add_images("Generated images/l9", gen(z9).detach()[:4] / 2 + 0.5, epoch)
     writer.add_images("Generated images/l20", gen(z20).detach()[:4] / 2 + 0.5, epoch)
+    im_tile = gen(z_tile).detach() / 2 + 0.5
+
+    def offsetLoss(samples, crop1,crop2):
+        return np.abs(samples[:, :, :, crop1] - samples[:, :, :, -crop2]).mean()+ np.abs(samples[:, :, crop1] - samples[:, :, -crop2]).mean()    
+    best=1e6
+    crop1=0
+    crop2=0
+    for i in range(ovp*tot_subsample/2,ovp*tot_subsample):
+        for j in range(ovp*tot_subsample/2,ovp*tot_subsample):
+            loss = offsetLoss(i,j)
+            if loss < best:
+                best=loss
+                crop1=i
+                crop2=j
+
+    print ("optimal offsets",crop1,crop2,"offset edge errors",best)   
+    im_tile = im_tile[0, :, crop1:-crop2, crop1:-crop2]
+    writer.add_images("Tiled images/l20", torch.cat((torch.cat((im_tile, im_tile),1), torch.cat((im_tile,im_tile),1)),2), epoch)
