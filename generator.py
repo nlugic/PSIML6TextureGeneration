@@ -19,7 +19,7 @@ class SGANGenerator(nn.Module):
                 kernel_size = KERNEL_SIZE,
                 stride = STRIDE,
                 padding = PADDING,
-                output_padding = 1
+                #output_padding=1
             ))
 
             if i < num_layers - 1:

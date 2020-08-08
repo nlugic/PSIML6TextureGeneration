@@ -21,7 +21,7 @@ dis = SGANDiscrimantor(layers).to(device)
 dis.apply(init_sgan_weights)
 
 dataset_folder = "train_textures/"
-dataset_iter = get_train_dataset(dataset_folder, device, size = random_size * 2 ** layers, batch_size = batch_size)
+dataset_iter = get_train_dataset(dataset_folder, device, size = (random_size - 1) * 2 ** layers + 1, batch_size = batch_size)
 
 loss_funct_g = lambda pred: torch.mean(F.binary_cross_entropy_with_logits(pred, pred.new_ones(pred.size())))
 loss_funct_d = lambda pred_real, pred_fake: torch.mean(F.binary_cross_entropy_with_logits(pred_fake, pred_fake.new_zeros(pred_fake.size()))) + torch.mean(F.binary_cross_entropy_with_logits(pred_real, pred_real.new_ones(pred_real.size())))
@@ -72,5 +72,5 @@ while curr_epoch < total_epochs:
 
     writer.add_scalar("Loss/Generator", np.mean(loss_list_g), epoch)
     writer.add_scalar("Loss/Discriminator", np.mean(loss_list_d), epoch)
-    writer.add_images("Generated images/l9", gen(z9)[:4] / 2 + 0.5, epoch)
-    writer.add_images("Generated images/l20", gen(z20)[:4] / 2 + 0.5, epoch)
+    writer.add_images("Generated images/l9", gen(z9).detach()[:4] / 2 + 0.5, epoch)
+    writer.add_images("Generated images/l20", gen(z20).detach()[:4] / 2 + 0.5, epoch)
