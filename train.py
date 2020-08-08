@@ -85,7 +85,7 @@ while True:
     crop2=0
     for i in range(32,64):
         for j in range(32,64):
-            loss = offsetLoss(im_tile,i,j)
+            loss = offsetLoss(im_tile.cpu(),i,j)
             if loss < best:
                 best=loss
                 crop1=i
