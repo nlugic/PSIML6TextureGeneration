@@ -76,16 +76,20 @@ while True:
     writer.add_scalar("Loss/Discriminator", np.mean(loss_list_d), epoch)
     writer.add_images("Generated images/l9", gen(z9).detach()[:4] / 2 + 0.5, epoch)
     writer.add_images("Generated images/l20", gen(z20).detach()[:4] / 2 + 0.5, epoch)
-    im_tile = gen(z_tile).detach() / 2 + 0.5
+    im_tile = gen(z_tile).detach().cpu() / 2 + 0.5
 
-    def offsetLoss(samples, crop1,crop2):
-        return np.abs(samples[:, :, :, crop1] - samples[:, :, :, -crop2]).mean()+ np.abs(samples[:, :, crop1] - samples[:, :, -crop2]).mean()    
+    def offsetLoss(samples, crop1,crop2, best):
+        a = torch.abs(samples[:, :, :, crop1] - samples[:, :, :, -crop2]).mean()
+        b = 1
+        if a < best:
+            b = torch.abs(samples[:, :, crop1] - samples[:, :, -crop2]).mean()
+        return a + b
     best=1e6
     crop1=0
     crop2=0
     for i in range(32,64):
         for j in range(32,64):
-            loss = offsetLoss(im_tile.cpu(),i,j)
+            loss = offsetLoss(im_tile,i,j, best).item()
             if loss < best:
                 best=loss
                 crop1=i
@@ -93,4 +97,4 @@ while True:
 
     print ("optimal offsets",crop1,crop2,"offset edge errors",best)   
     im_tile = im_tile[0, :, crop1:-crop2, crop1:-crop2]
-    writer.add_images("Tiled images/l20", torch.cat((torch.cat((im_tile, im_tile),1), torch.cat((im_tile,im_tile),1)),2), epoch)
+    writer.add_image("Tiled images/l20", torch.cat((torch.cat((im_tile, im_tile),1), torch.cat((im_tile,im_tile),1)),2), epoch)
