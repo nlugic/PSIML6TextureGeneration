@@ -9,44 +9,46 @@ from generator import SGANGenerator
 from helpers import get_train_dataset, init_sgan_weights, save_tensor_as_image
 
 layers = 5
-nz = 50
-l = 9
+random_size = 9
+random_channels = 50
 batch_size = 32
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-gen = SGANGenerator(nz, layers).to(device)
-gen.layers.apply(init_sgan_weights)
+gen = SGANGenerator(random_channels, layers).to(device)
+gen.apply(init_sgan_weights)
 dis = SGANDiscrimantor(layers).to(device)
-dis.layers.apply(init_sgan_weights)
+dis.apply(init_sgan_weights)
 
 dataset_folder = "train_textures/"
-dataset_iter = get_train_dataset(dataset_folder, device, size=(l-1) * 2**layers + 1, batch_size=batch_size)
+dataset_iter = get_train_dataset(dataset_folder, device, size = (random_size - 1) * 2 ** layers + 1, batch_size = batch_size)
 
 loss_funct_g = lambda pred: torch.mean(F.binary_cross_entropy_with_logits(pred, pred.new_ones(pred.size())))
 loss_funct_d = lambda pred_real, pred_fake: torch.mean(F.binary_cross_entropy_with_logits(pred_fake, pred_fake.new_zeros(pred_fake.size()))) + torch.mean(F.binary_cross_entropy_with_logits(pred_real, pred_real.new_ones(pred_real.size())))
 
-optim_g = torch.optim.Adam(gen.parameters(), lr=0.0002, betas=(0.5, 0.999), weight_decay=1e-5)
-optim_d = torch.optim.Adam(dis.parameters(), lr=0.0002, betas=(0.5, 0.999), weight_decay=1e-5)
+optim_g = torch.optim.Adam(gen.parameters(), lr = 2e-4, betas = (0.5, 0.999), weight_decay = 1e-5)
+optim_d = torch.optim.Adam(dis.parameters(), lr = 2e-4, betas = (0.5, 0.999), weight_decay = 1e-5)
 
 writer = SummaryWriter()
-z9 = torch.rand(batch_size, nz, 9, 9).to(device) * 2 - 1
-z20 = torch.rand(batch_size, nz, 20, 20).to(device) * 2 - 1
+z9 = torch.rand(batch_size, random_channels, 9, 9).to(device) * 2.0 - 1.0
+z20 = torch.rand(batch_size, random_channels, 20, 20).to(device) * 2.0 - 1.0
 
-epoch = 0
-while True:
-    epoch += 1
-    print("Epoch", epoch)
+curr_epoch = 0
+total_epochs = 50
+
+while curr_epoch < total_epochs:
+    curr_epoch += 1
+    print("Epoch", curr_epoch)
 
     loss_list_d = []
     loss_list_g = []
 
     n_iter = 50 # oni imaju 100 iteracija, ali u jednoj treniraju ili gen ili dis, a mi oba
-    for i, img_real in enumerate(tqdm(dataset_iter, total=n_iter)):
+    for i, img_real in enumerate(tqdm(dataset_iter, total = n_iter)):
         if i >= n_iter:
             break
 
-        z = torch.rand(batch_size, nz, l, l).to(device) * 2 - 1
+        z = torch.rand(batch_size, random_channels, random_size, random_size).to(device) * 2.0 - 1.0
 
         # Train discriminator
         dis.zero_grad()
@@ -61,7 +63,6 @@ while True:
         
         # Train generator
         gen.zero_grad()
-        #img_fake = gen(z)
         pred_fake = dis(img_fake)
 
         loss_g = loss_funct_g(pred_fake)
