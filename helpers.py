@@ -8,11 +8,10 @@ import torch.nn as nn
 def init_sgan_weights(node):
     if isinstance(node, nn.Conv2d) or isinstance(node, nn.ConvTranspose2d):
         nn.init.normal_(node.weight.data, std = 0.02)
-        #nn.init.normal_(node.bias.data, std = 0.02) # ovo je u kodu najverovatnije 0.0
+        nn.init.constant_(node.bias.data, 0.0)
     elif isinstance(node, nn.BatchNorm2d):
-        #nn.init.normal_(node.weight.data, std = 0.02) # ovo je u kodu najverovatnije sa mean = 1.0
         nn.init.normal_(node.weight.data, mean=1.0, std = 0.02)
-        #nn.init.normal_(node.bias.data, std = 0.02) # ovo je u kodu najverovatnije 0.0
+        nn.init.constant_(node.bias.data, 0.0)
 
 def image_to_tensor(img):
     tensor = torch.Tensor(np.array(img).transpose((2, 0, 1)))
