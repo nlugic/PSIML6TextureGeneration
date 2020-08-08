@@ -6,7 +6,7 @@ class SGANDiscrimantor(nn.Module):
         super(SGANDiscrimantor, self).__init__()
         self.name = 'SGAN' + str(num_layers) + '_DIS'
         self.layers = nn.ModuleList()
-        
+
         NUM_FILTERS = [2 ** (i + 6) for i in range(num_layers - 1)] + [1]
         KERNEL_SIZE = 5
         STRIDE = 2
@@ -19,17 +19,18 @@ class SGANDiscrimantor(nn.Module):
                 kernel_size = KERNEL_SIZE,
                 stride = STRIDE,
                 padding = PADDING
-                ))
-                
+            ))
+
             if i < num_layers - 1:
-                self.layers.append(nn.LeakyReLU(0.2, inplace = True))
                 if i > 0:
-                    self.layers.append(nn.BatchNorm2d(NUM_FILTERS[i], eps = 1e-04, momentum = 0.1))
+                    self.layers.append(nn.BatchNorm2d(NUM_FILTERS[i], eps = 1e-4, momentum = 0.1))
+
+                self.layers.append(nn.LeakyReLU(0.2, inplace = True))
 
     def forward(self, input_tensor):
         output = input_tensor
-        
+
         for layer in self.layers:
             output = layer(output)
-        
+
         return output

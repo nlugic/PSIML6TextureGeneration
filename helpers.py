@@ -10,15 +10,15 @@ def init_sgan_weights(node):
         nn.init.normal_(node.weight.data, std = 0.02)
         nn.init.constant_(node.bias.data, 0.0)
     elif isinstance(node, nn.BatchNorm2d):
-        nn.init.normal_(node.weight.data, mean=1.0, std = 0.02)
+        nn.init.normal_(node.weight.data, mean = 1.0, std = 0.02)
         nn.init.constant_(node.bias.data, 0.0)
 
 def image_to_tensor(img):
     tensor = torch.Tensor(np.array(img).transpose((2, 0, 1)))
-    return tensor / 255.0 * 2.0 - 1.0 # u kodu je -1..1 pa sam i ovde tako stavio, mozda treba od 0..1 
+    return tensor / 255.0 * 2.0 - 1.0
 
 def save_tensor_as_image(tensor, filename):
-    img = tensor.cpu().numpy().transpose((1, 2, 0)) # treba videti da li treba ovde i gore transpose
+    img = tensor.cpu().numpy().transpose((1, 2, 0))
     img = np.uint8((img + 1.0) * 255.0 / 2.0)
 
     Image.fromarray(img).save(filename)

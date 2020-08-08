@@ -7,7 +7,7 @@ class SGANGenerator(nn.Module):
         self.name = 'SGAN' + str(num_layers) + '_GEN'
         self.layers = nn.ModuleList()
         
-        NUM_FILTERS = [2 ** (num_layers + 4 - i) for i in range(num_layers - 1)] + [3] # 3 -> RGB output
+        NUM_FILTERS = [2 ** (num_layers + 4 - i) for i in range(num_layers - 1)] + [3]
         KERNEL_SIZE = 5
         STRIDE = 2
         PADDING = KERNEL_SIZE // 2
@@ -23,10 +23,9 @@ class SGANGenerator(nn.Module):
             ))
 
             if i < num_layers - 1:
+                self.layers.append(nn.BatchNorm2d(NUM_FILTERS[i], eps = 1e-4, momentum = 0.1))
                 self.layers.append(nn.ReLU(inplace = True))
-                self.layers.append(nn.BatchNorm2d(NUM_FILTERS[i], eps = 1e-04, momentum = 0.1))
             else:
-                # za poslednji sloj rade tanh bez batch norma
                 self.layers.append(nn.Tanh())
 
     def forward(self, input_tensor):
