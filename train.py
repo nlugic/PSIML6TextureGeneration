@@ -14,6 +14,7 @@ random_channels = 50
 batch_size = 32
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+torch.manual_seed(0)
 
 gen = SGANGenerator(random_channels, layers).to(device)
 gen.apply(init_sgan_weights)
@@ -70,7 +71,12 @@ while curr_epoch < total_epochs:
         loss_g.backward()
         optim_g.step()
 
-    writer.add_scalar("Loss/Generator", np.mean(loss_list_g), epoch)
-    writer.add_scalar("Loss/Discriminator", np.mean(loss_list_d), epoch)
-    writer.add_images("Generated images/l9", gen(z9).detach()[:4] / 2 + 0.5, epoch)
-    writer.add_images("Generated images/l20", gen(z20).detach()[:4] / 2 + 0.5, epoch)
+    writer.add_scalar("Loss/Generator", np.mean(loss_list_g), curr_epoch)
+    writer.add_scalar("Loss/Discriminator", np.mean(loss_list_d), curr_epoch)
+    gen.eval()
+    dis.eval()
+    with torch.no_grad():
+        writer.add_images("Generated images/l9", gen(z9).detach()[:4] / 2 + 0.5, curr_epoch)
+        writer.add_images("Generated images/l20", gen(z20).detach()[:4] / 2 + 0.5, curr_epoch)
+    gen.train()
+    dis.train()
