@@ -65,7 +65,7 @@ while curr_epoch < args.training_epochs:
         optim_g.step()
 
     if curr_epoch % 15 == 0:
-        torch.save(gen.state_dict(), os.path.join(arg.output_path, gen.name + '_epoch_' + str(curr_epoch) + '.pt'))
+        torch.save(gen.state_dict(), os.path.join(args.output_path, gen.name + '_epoch_' + str(curr_epoch) + '.pt'))
 
     writer.add_scalar("Loss/Generator", np.mean(loss_list_g), curr_epoch)
     writer.add_scalar("Loss/Discriminator", np.mean(loss_list_d), curr_epoch)
