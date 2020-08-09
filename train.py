@@ -3,7 +3,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
-from helpers import get_train_dataset, init_sgan_weights, save_tensor_as_image
+import helpers as H
 from generator import SGANGenerator
 from discriminator import SGANDiscrimantor
 
@@ -12,17 +12,17 @@ args = H.get_training_arguments()
 torch.manual_seed(0)
 
 gen = SGANGenerator(args.input_channels, args.sgan_layers).to(H.DEVICE)
-gen.apply(init_sgan_weights)
+gen.apply(H.init_sgan_weights)
 dis = SGANDiscrimantor(args.sgan_layers).to(H.DEVICE)
-dis.apply(init_sgan_weights)
+dis.apply(H.init_sgan_weights)
 
-dataset_iter = get_train_dataset(args.dataset_path, H.DEVICE, size = (args.input_size - 1) * 2 ** args.sgan_layers + 1, batch_size = args.batch_size)
+dataset_iter = H.get_train_dataset(args.dataset_path, H.DEVICE, (args.input_size - 1) * 2 ** args.sgan_layers + 1, dataset_size = args.dataset_size)
 
 loss_funct_g = lambda pred: torch.mean(F.binary_cross_entropy_with_logits(pred, pred.new_ones(pred.size())))
 loss_funct_d = lambda pred_real, pred_fake: torch.mean(F.binary_cross_entropy_with_logits(pred_fake, pred_fake.new_zeros(pred_fake.size()))) + torch.mean(F.binary_cross_entropy_with_logits(pred_real, pred_real.new_ones(pred_real.size())))
 
-optim_g = torch.optim.Adam(gen.parameters(), lr = args.lr, betas = (0.5, 0.999), weight_decay = 1e-5)
-optim_d = torch.optim.Adam(dis.parameters(), lr = args.lr, betas = (0.5, 0.999), weight_decay = 1e-5)
+optim_g = torch.optim.Adam(gen.parameters(), lr = args.learning_rate, betas = (0.5, 0.999), weight_decay = 1e-5)
+optim_d = torch.optim.Adam(dis.parameters(), lr = args.learning_rate, betas = (0.5, 0.999), weight_decay = 1e-5)
 
 writer = SummaryWriter()
 z9 = torch.rand(args.batch_size, args.input_channels, 9, 9).to(H.DEVICE) * 2.0 - 1.0
