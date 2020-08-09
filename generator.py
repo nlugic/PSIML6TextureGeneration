@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 
 class SGANGenerator(nn.Module):
-    def __init__(self, in_channels, num_layers):
+    def __init__(self, model_name, num_layers, in_channels):
         super(SGANGenerator, self).__init__()
-        self.name = 'SGAN' + str(num_layers) + '_GEN'
+        self.name = 'SGAN' + str(num_layers) + '_' + model_name + '_GEN'
         self.layers = nn.ModuleList()
         
         NUM_FILTERS = [2 ** (num_layers + 4 - i) for i in range(num_layers - 1)] + [3]
@@ -18,8 +18,7 @@ class SGANGenerator(nn.Module):
                 NUM_FILTERS[i],
                 kernel_size = KERNEL_SIZE,
                 stride = STRIDE,
-                padding = PADDING,
-                #output_padding=1
+                padding = PADDING
             ))
 
             if i < num_layers - 1:

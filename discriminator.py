@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 
 class SGANDiscrimantor(nn.Module):
-    def __init__(self, num_layers):
+    def __init__(self, model_name, num_layers):
         super(SGANDiscrimantor, self).__init__()
-        self.name = 'SGAN' + str(num_layers) + '_DIS'
+        self.name = 'SGAN' + str(num_layers) + '_' + model_name + '_DIS'
         self.layers = nn.ModuleList()
 
         NUM_FILTERS = [2 ** (i + 6) for i in range(num_layers - 1)] + [1]
