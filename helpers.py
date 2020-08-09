@@ -4,7 +4,6 @@ from PIL import Image
 import torch
 import torch.nn as nn
 
-# uradi se model.apply(init_sgan_weights) da bi se sve tezine u mrezi inicijalizovale
 def init_sgan_weights(node):
     if isinstance(node, nn.Conv2d) or isinstance(node, nn.ConvTranspose2d):
         nn.init.normal_(node.weight.data, std = 0.02)
@@ -26,20 +25,20 @@ def save_tensor_as_image(tensor, filename):
 def get_train_dataset(path, device, size = 128, batch_size = 64, mirror = True):
     images_to_sample = []
 
-    if os.path.isdir(path): # folder sa slikama
-        for file in os.listdir(path): # promeniti tako da pita dal je fajl
+    if os.path.isdir(path):
+        for file in os.listdir(path):
             filename = os.path.join(path, file)
             try:
                 img = Image.open(filename)
                 images_to_sample.append(image_to_tensor(img).to(device))
-                if mirror: # pitanje koliko je ovo potrebno
+                if mirror:
                     img = img.transpose(Image.FLIP_LEFT_RIGHT)
                     images_to_sample.append(image_to_tensor(img).to(device))
             except:
                 print("Image ", filename, " failed to load!")
 
         random.shuffle(images_to_sample)
-    else: # pojedinacna slika
+    else:
         images_to_sample.append(image_to_tensor(Image.open(path)))
 
     train_dataset = torch.zeros(batch_size, 3, size, size, device=device)
