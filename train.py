@@ -1,43 +1,36 @@
-from tqdm import tqdm
-import torch
-from torch.utils.tensorboard import SummaryWriter
-import torch.nn.functional as F
 import numpy as np
-
-from discriminator import SGANDiscrimantor
+import torch
+import torch.nn.functional as F
+from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm
+import helpers as H
 from generator import SGANGenerator
-from helpers import get_train_dataset, init_sgan_weights, save_tensor_as_image
+from discriminator import SGANDiscrimantor
 
-layers = 5
-random_size = 9
-random_channels = 50
-batch_size = 32
-
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+args = H.get_training_arguments()
+print(args)
 torch.manual_seed(0)
 
-gen = SGANGenerator(random_channels, layers).to(device)
-gen.apply(init_sgan_weights)
-dis = SGANDiscrimantor(layers).to(device)
-dis.apply(init_sgan_weights)
+gen = SGANGenerator(args.input_channels, args.sgan_layers).to(H.DEVICE)
+gen.apply(H.init_sgan_weights)
+dis = SGANDiscrimantor(args.sgan_layers).to(H.DEVICE)
+dis.apply(H.init_sgan_weights)
 
-dataset_folder = "train_textures/"
-dataset_iter = get_train_dataset(dataset_folder, device, size = (random_size - 1) * 2 ** layers + 1, batch_size = batch_size)
+dataset_iter = H.get_train_dataset(args.dataset_path, H.DEVICE, (args.input_size - 1) * 2 ** args.sgan_layers + 1, batch_size = args.batch_size)
 
 loss_funct_g = lambda pred: torch.mean(F.binary_cross_entropy_with_logits(pred, pred.new_ones(pred.size())))
 loss_funct_d = lambda pred_real, pred_fake: torch.mean(F.binary_cross_entropy_with_logits(pred_fake, pred_fake.new_zeros(pred_fake.size()))) + torch.mean(F.binary_cross_entropy_with_logits(pred_real, pred_real.new_ones(pred_real.size())))
 
-optim_g = torch.optim.Adam(gen.parameters(), lr = 2e-4, betas = (0.5, 0.999), weight_decay = 1e-5)
-optim_d = torch.optim.Adam(dis.parameters(), lr = 2e-4, betas = (0.5, 0.999), weight_decay = 1e-5)
+optim_g = torch.optim.Adam(gen.parameters(), lr = args.learning_rate, betas = (0.5, 0.999), weight_decay = 1e-5)
+optim_d = torch.optim.Adam(dis.parameters(), lr = args.learning_rate, betas = (0.5, 0.999), weight_decay = 1e-5)
 
 writer = SummaryWriter()
-z9 = torch.rand(batch_size, random_channels, 9, 9).to(device) * 2.0 - 1.0
-z20 = torch.rand(batch_size, random_channels, 20, 20).to(device) * 2.0 - 1.0
+z9 = torch.rand(args.batch_size, args.input_channels, args.input_size, args.input_size).to(H.DEVICE) * 2.0 - 1.0
+z20 = torch.rand(args.batch_size, args.input_channels, 20, 20).to(H.DEVICE) * 2.0 - 1.0
 
 curr_epoch = 0
-total_epochs = 50
 
-while curr_epoch < total_epochs:
+while curr_epoch < args.training_epochs:
     curr_epoch += 1
     print("Epoch", curr_epoch)
 
@@ -49,7 +42,7 @@ while curr_epoch < total_epochs:
         if i >= n_iter:
             break
 
-        z = torch.rand(batch_size, random_channels, random_size, random_size).to(device) * 2.0 - 1.0
+        z = torch.rand(args.batch_size, args.input_channels, args.input_size, args.input_size).to(H.DEVICE) * 2.0 - 1.0
 
         # Train discriminator
         dis.zero_grad()
@@ -76,7 +69,10 @@ while curr_epoch < total_epochs:
     gen.eval()
     dis.eval()
     with torch.no_grad():
-        writer.add_images("Generated images/l9", gen(z9).detach()[:4] / 2 + 0.5, curr_epoch)
-        writer.add_images("Generated images/l20", gen(z20).detach()[:4] / 2 + 0.5, curr_epoch)
+        writer.add_images("Generated images/l9", gen(z9).detach()[:4] / 2.0 + 0.5, curr_epoch)
+        writer.add_images("Generated images/l20", gen(z20).detach()[:4] / 2.0 + 0.5, curr_epoch)
     gen.train()
     dis.train()
+
+# sacuvanje modela na args.output_path
+torch.save(gen.state_dict(), arg.output_path)
