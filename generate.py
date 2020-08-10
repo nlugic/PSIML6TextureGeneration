@@ -8,9 +8,9 @@ from generator import SGANGenerator
 
 args = H.get_generation_arguments()
 
-H.DEVICE = torch.device("cpu") # veca je preciznost, a to je bitno za izracunavanje cropa
+H.DEVICE = torch.device('cpu')
 
-gen = SGANGenerator(args.input_channels, args.sgan_layers).to(H.DEVICE)
+gen = SGANGenerator('generic_generator', args.sgan_layers, args.input_channels).to(H.DEVICE)
 gen.load_state_dict(torch.load(args.saved_model_path, map_location = H.DEVICE))
 gen.eval()
 
@@ -57,10 +57,10 @@ if args.tiling_columns > 1:
 
 texture = texture[0, :, :, :].numpy().T
 
-plt.title('Texture image generated with SGAN' + str(args.sgan_layers) + ':')
-plt.imshow(texture)
-plt.show()
-
 if args.output_path:
     img = Image.fromarray(np.uint8(texture * 255.0))
     img.save(os.path.join(args.output_path, os.path.basename(args.saved_model_path)) + '_output.jpg')
+else:
+    plt.title('Texture image generated with SGAN' + str(args.sgan_layers) + ':')
+    plt.imshow(texture)
+    plt.show()

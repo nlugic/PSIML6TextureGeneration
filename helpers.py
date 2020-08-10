@@ -10,7 +10,7 @@ def get_training_arguments():
     arg_parser = argparse.ArgumentParser(description = 'Train the SGAN model on a picture/set of pictures.')
     arg_parser.add_argument('dataset_path', metavar = 'TRAIN_DATA_PATH', type = str, help = 'Path to the image file/folder containing images which will be used as training data.')
     arg_parser.add_argument('model_name', metavar = 'MODEL_NAME', type = str, help = 'A name under which the SGAN model will be trained and saved.')
-    arg_parser.add_argument('--sgan_layers', metavar = 'SGAN_LAYERS', nargs = '?', const = 5, default = 5, type = int, help = 'Number of Conv2d/ConvTranspose2d layers in the model\'s discriminator/generator.')
+    arg_parser.add_argument('--sgan_layers', '-l', metavar = 'SGAN_LAYERS', nargs = '?', const = 5, default = 5, type = int, help = 'Number of Conv2d/ConvTranspose2d layers in the model\'s discriminator/generator.')
     arg_parser.add_argument('--input_size', '-s', metavar = 'INPUT_SIZE', nargs = '?', const = 10, default = 10, type = int, help = 'Height/width of the model\'s input.')
     arg_parser.add_argument('--input_channels', '-c', metavar = 'INPUT_CHANNELS', nargs = '?', const = 50, default = 50, type = int, help = 'Number of channels in the model\'s input.')
     arg_parser.add_argument('--training_epochs', '-e', metavar = 'TRAIN_NUMBER_OF_EPOCHS', nargs = '?', const = 45, default = 45, type = int, help = 'Number of epochs used for training.')
@@ -24,7 +24,7 @@ def get_training_arguments():
 def get_generation_arguments():
     arg_parser = argparse.ArgumentParser(description = 'Use a pretrained SGAN model to generate a texture.')
     arg_parser.add_argument('saved_model_path', metavar = 'SAVED_MODEL_PATH', type = str, help = 'Path to the saved SGAN model.')
-    arg_parser.add_argument('--sgan_layers', metavar = 'SGAN_LAYERS', nargs = '?', const = 5, default = 5, type = int, help = 'Number of Conv2d/ConvTranspose2d layers in the model\'s discriminator/generator.')
+    arg_parser.add_argument('--sgan_layers', '-l', metavar = 'SGAN_LAYERS', nargs = '?', const = 5, default = 5, type = int, help = 'Number of Conv2d/ConvTranspose2d layers in the model\'s discriminator/generator.')
     arg_parser.add_argument('--input_size', '-s', metavar = 'INPUT_SIZE', nargs = '?', const = 20, default = 20, type = int, help = 'Height/width of the model\'s input.')
     arg_parser.add_argument('--input_channels', '-c', metavar = 'INPUT_CHANNELS', nargs = '?', const = 50, default = 50, type = int, help = 'Number of channels in the model\'s input.')
     arg_parser.add_argument('--tiling_rows', '-tr', metavar = 'TILING_ROWS', nargs = '?', const = 0, default = 0, type = int, help = 'Number of rows for tiling texture generation.')
