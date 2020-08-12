@@ -10,13 +10,15 @@ args = H.get_generation_arguments()
 
 H.DEVICE = torch.device('cpu')
 
-gen = SGANGenerator('generic_generator', args.sgan_layers, args.input_channels).to(H.DEVICE)
-gen.load_state_dict(torch.load(args.saved_model_path, map_location = H.DEVICE))
+state_dict = torch.load(args.saved_model_path, map_location = H.DEVICE)
+input_channels = state_dict['layers.0.weight'].shape[0]
+gen = SGANGenerator('generic_generator', args.sgan_layers, input_channels).to(H.DEVICE)
+gen.load_state_dict(state_dict)
 gen.eval()
 
 input_height = args.input_size + (4 if args.tiling_rows > 0 else 0)
 input_width = args.input_size + (4 if args.tiling_columns > 0 else 0)
-input_tensor = torch.rand(1, args.input_channels, input_height, input_width).to(H.DEVICE) * 2.0 - 1.0
+input_tensor = torch.rand(1, input_channels, input_height, input_width).to(H.DEVICE) * 2.0 - 1.0
 
 if args.tiling_rows > 0:
     input_tensor[:, :, :4, :] = input_tensor[:, :, -4:, :]
@@ -28,18 +30,17 @@ with torch.no_grad():
     texture = gen(input_tensor).cpu() / 2.0 + 0.5
 
 if args.tiling_rows > 0 or args.tiling_columns > 0:
-    best=1e6
-    crop1=0
-    crop2=0
+    best = 1e6
+    crop1 = 0
+    crop2 = 0
     for i in range(2 ** args.sgan_layers, 2 ** (args.sgan_layers + 1)):
         for j in range(2 ** args.sgan_layers, 2 ** (args.sgan_layers + 1)):
             loss = (torch.abs(texture[:, :, :, i] - texture[:, :, :, -j]).mean() if args.tiling_columns > 0 else 0) \
                  + (torch.abs(texture[:, :, i] - texture[:, :, -j]).mean().item() if args.tiling_rows > 0 else 0)
             if loss < best:
-                best=loss
-                crop1=i
-                crop2=j
-    #print(crop1, crop2, best)
+                best = loss
+                crop1 = i
+                crop2 = j
 
 if args.tiling_rows > 0:
     texture = texture[:, :, crop1:-crop2, :]

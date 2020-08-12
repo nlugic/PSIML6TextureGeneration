@@ -26,9 +26,8 @@ def get_generation_arguments():
     arg_parser.add_argument('saved_model_path', metavar = 'SAVED_MODEL_PATH', type = str, help = 'Path to the saved SGAN model.')
     arg_parser.add_argument('--sgan_layers', '-l', metavar = 'SGAN_LAYERS', nargs = '?', const = 5, default = 5, type = int, help = 'Number of Conv2d/ConvTranspose2d layers in the model\'s discriminator/generator.')
     arg_parser.add_argument('--input_size', '-s', metavar = 'INPUT_SIZE', nargs = '?', const = 20, default = 20, type = int, help = 'Height/width of the model\'s input.')
-    arg_parser.add_argument('--input_channels', '-c', metavar = 'INPUT_CHANNELS', nargs = '?', const = 50, default = 50, type = int, help = 'Number of channels in the model\'s input.')
-    arg_parser.add_argument('--tiling_rows', '-tr', metavar = 'TILING_ROWS', nargs = '?', const = 0, default = 0, type = int, help = 'Number of rows for tiling texture generation.')
-    arg_parser.add_argument('--tiling_columns', '-tc', metavar = 'TILING_COLUMNS', nargs = '?', const = 0, default = 0, type = int, help = 'Number of columns for tiling texture generation.')
+    arg_parser.add_argument('--tiling_rows', '-r', metavar = 'TILING_ROWS', nargs = '?', const = 0, default = 0, type = int, help = 'Number of rows for tiling texture generation.')
+    arg_parser.add_argument('--tiling_columns', '-c', metavar = 'TILING_COLUMNS', nargs = '?', const = 0, default = 0, type = int, help = 'Number of columns for tiling texture generation.')
     arg_parser.add_argument('--output_path', '-o', metavar = 'OUTPUT_PATH', nargs = '?', const = '', type = str, help = 'Path to the output directory.')
 
     return arg_parser.parse_args()
